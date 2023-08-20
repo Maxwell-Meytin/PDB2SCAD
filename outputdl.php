@@ -1,6 +1,6 @@
 <?php
 session_start();
-$file = "/var/www/html/output/" . $_SESSION["outfile"];
+$file = "/var/www/html/pdb2scad/output/" . $_SESSION["outfile"];
 
 if (file_exists($file)) {
     header('Content-Description: File Transfer');
