@@ -34,7 +34,7 @@
     .form-row {
       display: flex;
       align-items: center;
-      margin-bottom: 5px;
+      margin-top: 10px;
     }
 
     .form-label {
@@ -62,14 +62,24 @@
 
   <div class="centered-content">
   <br/>
-    <p>Select a .pdb file to upload and use:</p>
+
+    
     <form class="centered-form" action="generate.php" method="post" enctype="multipart/form-data">
+      
+    
+      <p>Enter a 4 Charecter protien code or Select a .pdb file to upload and use:</p>
+      
+      <div class="form-row">
+        PDB ID:
+        <input type="text" name="pdbID"/>
+      </div>
+      
       <div class="form-row">
         <label class="form-label" for="myfile">Select a file:</label>
         <input type="file" id="protfile" name="protfile" accept=".pdb">
       </div>
 	  <br/>
-      <input class="form-input" type="submit" value="Submit">
+      <input class="form-input" type="submit" value="Convert">
     </form>
 
   </div>
