@@ -1,5 +1,15 @@
 <html>
-<head> <title> Start </title> </head>
+<head> 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ6MQJ10VV"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YQ6MQJ10VV');
+</script>
+<title> Start </title> </head>
 <body> 
 <?php 
 session_start();
