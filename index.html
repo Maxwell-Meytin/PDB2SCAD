@@ -2,7 +2,16 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>PDB2SCAD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDB2SCAD — Maxwell Meytin</title>
+  <meta name="description" content="Convert PDB protein structures into OpenSCAD models for 3D printing. Enter an RCSB protein code or upload a .pdb file."/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <link rel="stylesheet" href="/common.css"/>
+  <meta property="og:title" content="PDB2SCAD — Protein to 3D Print"/>
+  <meta property="og:description" content="Convert PDB protein structures into OpenSCAD models for 3D printing."/>
+  <meta property="og:url" content="https://maxwell.meytin.com/pdb2scad/"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:image" content="https://maxwell.meytin.com/pdb2scad/1a11SampleProtein.png"/>
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ6MQJ10VV"></script>
@@ -21,16 +30,6 @@
       font-size: 2.5vh;
       margin: 0;
       overflow-x: hidden;
-      background: #0f0e16;
-      color: #fff;
-      font-family: system-ui, ui-sans-serif, Arial;
-    }
-
-    a {
-      color: #8cb8f7;
-    }
-    a:hover {
-      color: #b8d4ff;
     }
 
     .center {
@@ -94,28 +93,11 @@
       margin: auto;
     }
 
-    .homeButton {
+    /* look comes from common.css; only positioning here */
+    #home {
       position: absolute;
       top: 8px;
       left: 8px;
-      padding: 6px 14px;
-      cursor: pointer;
-      font-size: 14px;
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 4px;
-      transition: background 0.12s, transform 0.06s;
-    }
-    .homeButton:hover { background: rgba(255,255,255,0.16); }
-    .homeButton:active { transform: scale(0.97); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
     }
 
     #model-container {
@@ -157,6 +139,7 @@
   </div>
 
   <div class="center" id="model-container">
+    <button class="homeButton" id="load-model-btn" onclick="loadPreview()">Load 3D model preview (~9 MB)</button>
   </div>
 
   <div class="center">
@@ -179,22 +162,23 @@
   <script>
     let proteinModel;
     let modelLoaded = false;
+    let modelRequested = false;
     let angleX = 0;
     let angleY = 0;
     let lastMouseX, lastMouseY;
     let isMouseOverCanvas = false;
 
-    function preload() {
-      console.log("Preloading model...");
-      proteinModel = loadModel('proteinModel.obj', true, () => {
-        console.log("Model loaded successfully.");
-        modelLoaded = true;
-      }, (err) => {
-        console.error("Failed to load proteinModel.obj", err);
-      });
+    function setup() {
+      // Canvas and model are created on demand (the model is ~9 MB),
+      // so casual visitors don't pay for the download
+      noCanvas();
     }
 
-    function setup() {
+    function loadPreview() {
+      if (modelRequested) return;
+      modelRequested = true;
+      document.getElementById('load-model-btn').style.display = 'none';
+
       let canvas = createCanvas(800, 500, WEBGL);
       canvas.parent('model-container');
       angleMode(RADIANS);
@@ -202,9 +186,16 @@
       // Mouse over detection for canvas
       canvas.mouseOver(() => isMouseOverCanvas = true);
       canvas.mouseOut(() => isMouseOverCanvas = false);
+
+      proteinModel = loadModel('proteinModel.obj', true, () => {
+        modelLoaded = true;
+      }, (err) => {
+        console.error("Failed to load proteinModel.obj", err);
+      });
     }
 
     function draw() {
+      if (!modelRequested) return;
       background(15, 14, 30);
       orbitControl(); // Enables smooth camera rotation
       scale(2);
@@ -227,12 +218,12 @@
       if (modelLoaded) {
         model(proteinModel);
       } else {
-        box(100); // fallback cube
+        box(100); // placeholder while the model downloads
         push();
         fill(0);
         textSize(20);
         textAlign(CENTER, CENTER);
-        text("Model not loaded", 0, 0);
+        text("Loading model...", 0, 0);
         pop();
       }
     }
