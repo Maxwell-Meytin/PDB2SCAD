@@ -21,6 +21,16 @@
       font-size: 2.5vh;
       margin: 0;
       overflow-x: hidden;
+      background: #0f0e16;
+      color: #fff;
+      font-family: system-ui, ui-sans-serif, Arial;
+    }
+
+    a {
+      color: #8cb8f7;
+    }
+    a:hover {
+      color: #b8d4ff;
     }
 
     .center {
@@ -28,7 +38,7 @@
     }
 
     .app-label {
-      background-color: #f0f0f0;
+      background-color: rgba(255,255,255,0.06);
       padding: 10px;
     }
 
@@ -55,10 +65,30 @@
       margin-right: 10px;
     }
 
-    .form-input {
+    .form-input, input[type="text"], input[type="file"] {
       height: 2.5vh;
       font-size: 70%;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 3px;
+      padding: 0 6px;
     }
+
+    input[type="submit"] {
+      cursor: pointer;
+      padding: 5px 16px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 4px;
+      font-size: 14px;
+      transition: background 0.12s, transform 0.06s;
+    }
+    input[type="submit"]:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    input[type="submit"]:active { transform: scale(0.97); }
 
     p {
       margin: auto;
@@ -66,8 +96,26 @@
 
     .homeButton {
       position: absolute;
-      top: 0px;
-      left: 0px;
+      top: 8px;
+      left: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 4px;
+      transition: background 0.12s, transform 0.06s;
+    }
+    .homeButton:hover { background: rgba(255,255,255,0.16); }
+    .homeButton:active { transform: scale(0.97); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     #model-container {
@@ -157,7 +205,7 @@
     }
 
     function draw() {
-      background(250);
+      background(15, 14, 30);
       orbitControl(); // Enables smooth camera rotation
       scale(2);
       normalMaterial();
@@ -168,8 +216,8 @@
         let dy = movedY || 0;
         angleY += dx * 0.01;
         angleX += dy * 0.01;
-      } else {
-        // Idle rotation
+      } else if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // Idle rotation — skip when user prefers reduced motion
         angleY += 0.005;
       }
 

@@ -53,8 +53,9 @@ if n<2:
 else:
 
     protien=sys.argv[1]
+    base=protien[:-4] if protien.lower().endswith(".pdb") else protien
     f = open(input_location + protien,"r")
-    fOut=open(output_location + "output_" + protien.rstrip(".pdb") + ".scad","w")
+    fOut=open(output_location + "output_" + base + ".scad","w")
     fOut.write("$fa=16;\n$fs=0.25;\n\nmodule cylinderPath(segSize,points)\n{\n  for(p=[0:len(points)-2])\n  {\n    startPoint=points[p];\n    endPoint=points[p+1];\n\n    dx=endPoint[0]-startPoint[0];\n    dy=endPoint[1]-startPoint[1];\n    dz=endPoint[2]-startPoint[2];\n\n    r=ceil(sqrt(dx^2+dy^2+dz^2));\n\n    a1=dx==0?90:atan(dy/dx);\n    a2=dz==0?90:atan(sqrt(dx^2+dy^2)/dz);\n\n\n    translate(startPoint)\n    {\n      if(dx<0 && dz<0)\n      {\n        rotate([0,0,a1])\n        rotate([0,180-a2,0])\n        cylinder(d=segSize,h=r);\n      }\n      else if(dx<0 && dz>=0)\n      {\n        rotate([0,0,a1])\n        rotate([0,-a2,0])\n        cylinder(d=segSize,h=r);\n      }\n      else if(dx>=0 && dz<0)\n      {\n        rotate([0,0,a1])\n        rotate([0,a2+180,0])\n        cylinder(d=segSize,h=r);\n      }\n      else if(dx>=0 && dz>=0)\n      {\n        rotate([0,0,a1])\n        rotate([0,a2,0])\n        cylinder(d=segSize,h=r);\n      }\n    }\n  }\n}\n")
     for line in f:
         if line.startswith(keyA):

@@ -1,6 +1,10 @@
 <?php
 session_start();
-$file = "/var/www/html/pdb2scad/output/" . $_SESSION["outfile"];
+if (!isset($_SESSION["outfile"])) {
+    echo "No conversion found for this session.";
+    exit;
+}
+$file = "/var/www/html/pdb2scad/output/" . basename($_SESSION["outfile"]);
 
 if (file_exists($file)) {
     header('Content-Description: File Transfer');
