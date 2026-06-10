@@ -100,6 +100,29 @@
       left: 8px;
     }
 
+    /* ── Conversion status ── */
+    #convert-status {
+      margin-top: 14px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 15px;
+    }
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #8cb8f7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-err { color: #ff9b9b; }
+    .status-ok  { color: #bef7e1; }
+
     #model-container {
       width: 100%;
       display: flex;
@@ -123,19 +146,20 @@
 
   <div class="centered-content">
     <br/>
-    <form class="centered-form" action="generate.php" method="post" enctype="multipart/form-data">
+    <form class="centered-form" id="convert-form" action="generate.php" method="post" enctype="multipart/form-data">
       <p>Enter a 4-character protein code or select a .pdb file to upload and use:</p>
       <div class="form-row">
         PDB ID:
         <input type="text" name="pdbID"/>
       </div>
       <div class="form-row">
-        <label class="form-label" for="myfile">Select a file:</label>
+        <label class="form-label" for="protfile">Select a file:</label>
         <input type="file" id="protfile" name="protfile" accept=".pdb">
       </div>
       <br/>
-      <input class="form-input" type="submit" value="Convert">
+      <input class="form-input" id="convert-btn" type="submit" value="Convert">
     </form>
+    <div id="convert-status" role="status" aria-live="polite"></div>
   </div>
 
   <div class="center" id="model-container">
@@ -160,6 +184,63 @@
   </div>
 
   <script>
+    // ── Convert form: in-page conversion with spinner + auto-download ──
+    const convertForm = document.getElementById('convert-form');
+    const convertBtn  = document.getElementById('convert-btn');
+    const statusEl    = document.getElementById('convert-status');
+
+    function setStatus(kind, text) {
+      statusEl.innerHTML = '';
+      if (kind === 'busy') {
+        const spin = document.createElement('span');
+        spin.className = 'spinner';
+        statusEl.appendChild(spin);
+      }
+      const msg = document.createElement('span');
+      if (kind === 'err') msg.className = 'status-err';
+      if (kind === 'ok')  msg.className = 'status-ok';
+      msg.textContent = text;
+      statusEl.appendChild(msg);
+    }
+
+    convertForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = convertForm.pdbID.value.trim();
+      const hasFile = convertForm.protfile.files.length > 0;
+      if (!hasFile && !/^[A-Za-z0-9]{4}$/.test(id)) {
+        setStatus('err', 'Enter a 4-character PDB ID or choose a .pdb file.');
+        return;
+      }
+      convertBtn.disabled = true;
+      setStatus('busy', 'Converting…');
+      try {
+        const resp = await fetch('generate.php', { method: 'POST', body: new FormData(convertForm) });
+        if (!resp.ok) {
+          let msg = 'Conversion failed.';
+          try { msg = (await resp.json()).error || msg; } catch (_) {}
+          throw new Error(msg);
+        }
+        const blob = await resp.blob();
+        const cd = resp.headers.get('Content-Disposition') || '';
+        const m = cd.match(/filename="?([^";]+)"?/);
+        const name = m ? m[1] : 'output.scad';
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setStatus('ok', 'Done — ' + name + ' downloaded.');
+      } catch (err) {
+        setStatus('err', err.message);
+      } finally {
+        convertBtn.disabled = false;
+      }
+    });
+
+    // ── 3D model preview ──
     let proteinModel;
     let modelLoaded = false;
     let modelRequested = false;
